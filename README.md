@@ -283,7 +283,3 @@ The included optimizer tests cover:
 - Routing/geocoding: OpenRouteService / OpenStreetMap ecosystem.
 - Batch station geocoding: U.S. Census Geocoder.
 - Map tiles: OpenStreetMap contributors.
-
-## Loom demo plan
-
-See [`docs/LOOM_SCRIPT.md`](docs/LOOM_SCRIPT.md).
