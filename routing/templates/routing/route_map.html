@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fuel Route Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <style>
+    html, body { height: 100%; margin: 0; font-family: system-ui, sans-serif; }
+    #map { height: 100%; }
+    .summary { position:absolute; z-index:1000; top:12px; right:12px; background:white; padding:12px 14px; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,.18); max-width:330px; }
+    .summary h3 { margin:0 0 8px; }
+    .summary p { margin:4px 0; font-size:14px; }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<div class="summary">
+  <h3>Optimized Fuel Route</h3>
+  <p><strong>Distance:</strong> <span id="distance"></span> mi</p>
+  <p><strong>Estimated fuel cost:</strong> $<span id="cost"></span></p>
+  <p><strong>Selected fuel stops:</strong> <span id="stops"></span></p>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+const data = {{ result_json|safe }};
+const map = L.map('map');
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  subdomains: 'abcd',
+  maxZoom: 20,
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+}).addTo(map);
+
+const route = L.geoJSON(data.route_geojson, {style: {weight: 5}}).addTo(map);
+map.fitBounds(route.getBounds(), {padding: [20,20]});
+
+L.marker([data.start.latitude, data.start.longitude]).addTo(map).bindPopup('<b>Start</b><br>' + data.start.resolved);
+L.marker([data.finish.latitude, data.finish.longitude]).addTo(map).bindPopup('<b>Finish</b><br>' + data.finish.resolved);
+
+for (const stop of data.fuel.selected_stops) {
+  L.circleMarker([stop.latitude, stop.longitude], {radius: 7}).addTo(map)
+    .bindPopup(`<b>${stop.name}</b><br>${stop.city}, ${stop.state}<br>$${stop.price_per_gallon}/gal<br>Route mile ${stop.route_mile}`);
+}
+
+document.getElementById('distance').textContent = data.distance_miles;
+document.getElementById('cost').textContent = Number(data.fuel.estimated_total_cost).toFixed(2);
+document.getElementById('stops').textContent = data.fuel.selected_stops.length;
+</script>
+</body>
+</html>
